@@ -40,9 +40,6 @@ const resolvers = {
                     throw new AuthenticationError('Authentication required');
                 }
         
-                console.log(args);
-                
-                // Add bookId validation
                 if (!args.book) {
                     throw new Error('book is required');
                 }
@@ -89,6 +86,7 @@ const resolvers = {
             if (!updatedUser) {
               throw new Error("Couldn't find a user with that id!");
             }
+            console.log(updatedUser);
         
             return updatedUser;
           } catch (err) {
