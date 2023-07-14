@@ -10,6 +10,7 @@ const SearchBooks = () => {
   const [searchInput, setSearchInput] = useState('');
   const [savedBookIds, setSavedBookIds] = useState(getSavedBookIds());
   const [loading, setLoading] = useState(false);
+  const token = Auth.loggedIn() ? Auth.getToken() : null;
 
   useEffect(() => {
     return () => saveBookIds(savedBookIds);
@@ -55,24 +56,59 @@ const SearchBooks = () => {
     }
   };
 
-  const handleSaveBook = async (bookId) => {
-    const token = Auth.loggedIn() ? Auth.getToken() : null;
+  // const handleSaveBook = async (book) => {
+  //   const token = Auth.loggedIn() ? Auth.getToken() : null;
+
+  //   console.log(book);
+  //   if (!token) {
+  //     return false;
+  //   }
+
+  //   try {
+  //     await saveBook({
+  //       variables: { input: { bookId: book.bookId, title: book.title, description: book.description, authors: book.authors, image: book.image } },
+  //       context: { headers: { authorization: `Bearer ${token}` } }
+  //     });
+
+  //     setSavedBookIds([...savedBookIds, book]);
+  //   } catch (err) {
+  //     console.error(err);
+  //   }
+  // };
+
+  const handleSaveBook = async (clickedBook) => {
+    const bookToSave = searchedBooks.find((book) => book.bookId === clickedBook.bookId);
 
     if (!token) {
       return false;
     }
 
+    console.log(savedBookIds);
     try {
-      await saveBook({
-        variables: { input: bookId },
-        context: { headers: { authorization: `Bearer ${token}` } }
+      const response = await saveBook({
+        variables: {
+          bookId: bookToSave.bookId,
+          title: bookToSave.title,
+          authors: bookToSave.authors,
+          description: bookToSave.description,
+          image: bookToSave.image
+        }
       });
 
-      setSavedBookIds([...savedBookIds, bookId]);
+      // Check if the mutation was successful
+      if (response.data.saveBook) {
+        // Check if the book is already saved by the user
+        const existingBookIndex = savedBookIds.findIndex((id) => id === bookToSave.bookId);
+        if (existingBookIndex === -1) {
+          setSavedBookIds([...savedBookIds, bookToSave.bookId]);
+        }
+      }
     } catch (err) {
       console.error(err);
     }
   };
+
+  const isBookSaved = (bookId) => savedBookIds.includes(bookId);
 
   return (
     <>
@@ -123,13 +159,14 @@ const SearchBooks = () => {
                     <Card.Text>{book.description}</Card.Text>
                     {Auth.loggedIn() && (
                       <Button
-                        disabled={savedBookIds?.some((savedBookId) => savedBookId === book.bookId)}
-                        className='btn-block btn-info'
-                        onClick={() => handleSaveBook(book.bookId)}
-                      >
-                        {savedBookIds?.some((savedBookId) => savedBookId === book.bookId)
-                          ? 'This book has already been saved!'
-                          : 'Save this Book!'}
+                      disabled={isBookSaved(book.bookId)}
+                      variant='info'
+                      className='btn-block'
+                      onClick={() => handleSaveBook(book)}
+                    >
+                      {isBookSaved(book.bookId)
+                        ? 'This book has already been saved!'
+                        : 'Save this Book!'}
                       </Button>
                     )}
                   </Card.Body>

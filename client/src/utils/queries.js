@@ -12,9 +12,7 @@ export const QUERY_ME = gql`
         description
         image
         link
-        authors {
-          author
-        }
+        authors
       }
     }
   }
@@ -28,9 +26,7 @@ export const QUERY_BOOKS = gql`
       description
       image
       link
-      authors {
-        author
-      }
+      authors
     }
   }
 `;

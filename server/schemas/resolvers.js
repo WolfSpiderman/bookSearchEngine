@@ -32,58 +32,68 @@ const resolvers = {
             const token = signToken(user);
             return { token, user };
         },
-        saveBook: async (parent, { input }, context) => {
+        saveBook: async (parent, args, context) => {
             try {
+                console.log(context);
                 const user = context.user;
                 if (!user) {
                     throw new AuthenticationError('Authentication required');
                 }
-    
-                console.log(input);
-                let book = await Book.findById(input.bookId);
+        
+                console.log(args);
+                
+                // Add bookId validation
+                if (!args.book) {
+                    throw new Error('book is required');
+                }
+
+                let authors = args.book.authors.map(author => author || 'Unknown Author');
+                
+                let book = await Book.findById(args.book.bookId);
                 if (!book) {
                     book = await Book.create({
-                        _id: input.bookId,
-                        title: input.title,
-                        authors: input.authors,
-                        description: input.description,
-                        link: input.link,
-                        image: input.image
+                        bookId: args.book.bookId,
+                        title: args.book.title,
+                        authors: authors,
+                        description: args.book.description,
+                        link: args.book.link,
+                        image: args.book.image
                     });
                 }
-    
+        
                 const updatedUser = await User.findOneAndUpdate(
                     { _id: user._id },
                     { $addToSet: { savedBooks: book } },
                     { new: true, runValidators: true }
                 ).populate('savedBooks');
-    
+        
                 return updatedUser;
             } catch (err) {
                 console.error(err);
                 throw err;
             }
         },
-        deleteBook: async (parent, { bookId }, { user }) => {
-            try {
-                if (!user) {
-                    throw new AuthenticationError('Authentication required');
-                }
-    
-                const updatedUser = await User.findOneAndUpdate(
-                    { _id: user._id },
-                    { $pull: { savedBooks: { _id: bookId } } },
-                    { new: true }
-                ).populate('savedBooks');
-    
-                if (!updatedUser) {
-                    throw new Error("Couldn't find a user with that id!");
-                }
-    
-                return updatedUser;
-            } catch (err) {
-                throw new Error(err.message);
+        deleteBook: async (parent, args, context) => {
+          try {
+            if (!context.user) {
+              throw new AuthenticationError('Authentication required');
             }
+        
+            console.log(args.bookId);
+            const updatedUser = await User.findOneAndUpdate(
+              { _id: context.user._id },
+              { $pull: { savedBooks: { bookId: args.bookId } } },
+              { new: true }
+            ).populate('savedBooks');
+        
+            if (!updatedUser) {
+              throw new Error("Couldn't find a user with that id!");
+            }
+        
+            return updatedUser;
+          } catch (err) {
+            throw new Error(err.message);
+          }
         },
         login: async (parent, { email, password }) => {
             const user = await User.findOne({ email });

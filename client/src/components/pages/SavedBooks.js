@@ -42,7 +42,9 @@ const SavedBooks = () => {
         throw new Error('Something went wrong!');
       }
 
-      const updatedUser = data.deleteBook.user;
+      console.log(data.deleteBook.savedBooks);
+      const updatedUser = { ...data.deleteBook.savedBooks, savedBooks: data.deleteBook.savedBooks.filter((book) => book.bookId !== bookId) };
+      console.log(updatedUser);
       setUserData(updatedUser);
       removeBookId(bookId);
     } catch (err) {
@@ -71,6 +73,9 @@ const SavedBooks = () => {
         </h2>
         <Row>
           {userData.savedBooks && userData.savedBooks.map((book) => {
+            if (!book.bookId) {
+              return null;
+            }
             return (
               <Col md="4" key={book.bookId}>
                 <Card border='dark'>
