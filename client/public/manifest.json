@@ -1,13 +1,7 @@
 {
-  "short_name": "Josh Portfolio",
-  "name": "Joshua Jenkins Professional Portfolio",
-  "description": "Professional portfolio of Joshua Jenkins, built with React and JavaScript.",
+  "short_name": "React App",
+  "name": "Create React App Sample",
   "icons": [
-    {
-      "src": "wolfspiderman.jpg",
-      "sizes":"64x64 32x32 24x24 16x16",
-      "type":"image/x-icon"
-    },
     {
       "src": "favicon.ico",
       "sizes": "64x64 32x32 24x24 16x16",
